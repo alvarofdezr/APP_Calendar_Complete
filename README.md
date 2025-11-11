@@ -103,23 +103,6 @@ Ambos servicios se conectan a una base de datos **PostgreSQL** compartida y est�
 
 ---
 
-## 🛠️ Tecnologías
-
-| Categoría | Tecnología | Propósito |
-| :--- | :--- | :--- |
-| **Backend API** | Node.js, Express | Servir frontend, API de autenticación |
-| | `bcryptjs`, `jsonwebtoken` | Hashing de claves y gestión de sesiones |
-| | `helmet`, `express-rate-limit` | Seguridad de cabeceras HTTP y Rate Limiting |
-| | `pg` | Conexión a PostgreSQL |
-| **Backend Transaccional**| Python 3.11 | Servidor de socket seguro (TLS) |
-| | `psycopg2-binary` | Pool de conexiones a PostgreSQL |
-| | `python-dotenv` | Gestión de variables de entorno |
-| **Base de Datos** | PostgreSQL 15 | Almacenamiento persistente |
-| **DevOps** | Docker, Docker Compose | Contenerización y orquestación |
-| **Seguridad** | OpenSSL | Cifrado TLS 1.3 y certificados |
-
----
-
 ## ⚙️ Instalación y Despliegue
 
 ### Prerrequisitos
