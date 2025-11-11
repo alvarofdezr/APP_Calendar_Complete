@@ -1,0 +1,44 @@
+# Dependencias y Módulos 
+node_modules/
+
+# Archivos de Entorno 
+.env
+.env.*
+*.env
+
+# Certificados SSL/TLS (no subir claves ni certs reales)
+certs/
+
+# Artefactos de Python 
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos del Sistema Operativo 
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de Log 
+*.log
+logs/
+
+# Archivos Personales y Sensibles 
+docs/
+
+# Configuración del Editor/IDE 
+.vscode/
+.idea/
+
+# Docker
+*.pid
+db-data/
+
+# Otros
+*.bak
+*.swp
+*.swo
+
+
+

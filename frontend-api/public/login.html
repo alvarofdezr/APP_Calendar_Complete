@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acceso de Usuario</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .login-container {
+            max-width: 450px;
+            margin-top: 5rem;
+        }
+    </style>
+  </head>
+  <body class="bg-light">
+    
+    <div class="container login-container">
+      <div class="card shadow-lg border-0">
+        <div class="card-body p-4 p-md-5">
+          
+          <div class="text-center mb-4">
+            <img
+              src="https://www.us.es/sites/default/files/inline-images/US-marca-digital_0.png"
+              alt="Logo"
+              class="img-fluid mb-3"
+              style="max-width: 250px"
+            />
+          </div>
+
+          <form id="form-login" style="display: block" autocomplete="on">
+            <h3 class="text-center mb-4">Iniciar Sesión</h3>
+            <div class="input-group mb-3">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+              <input
+                type="text"
+                id="usuario"
+                class="form-control"
+                placeholder="Usuario"
+                required
+                autocomplete="username"
+              />
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <input
+                type="password"
+                id="clave"
+                class="form-control"
+                placeholder="Clave"
+                required
+                autocomplete="current-password"
+              />
+            </div>
+            <div class="d-grid gap-2 mb-3">
+                <button type="submit" class="btn btn-primary btn-lg">Login</button>
+            </div>
+            <div class="text-center">
+                <a href="#" id="btn-crear" class="text-decoration-none">¿No tienes cuenta? Regístrate</a>
+            </div>
+          </form>
+
+          <form id="form-registro" style="display: none" autocomplete="on">
+            <h3 class="text-center mb-4">Crear Cuenta</h3>
+            <div class="input-group mb-3">
+              <span class="input-group-text"><i class="fas fa-user-plus"></i></span>
+              <input
+                type="text"
+                id="nuevo_usuario"
+                class="form-control"
+                placeholder="Nuevo usuario"
+                required
+                autocomplete="username"
+              />
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text"><i class="fas fa-key"></i></span>
+              <input
+                type="password"
+                id="nueva_clave"
+                class="form-control"
+                placeholder="Nueva clave"
+                required
+                autocomplete="new-password"
+              />
+            </div>
+            <div class="d-grid gap-2 mb-3">
+                <button type="submit" class="btn btn-success btn-lg">Registrar</button>
+            </div>
+            <div class="text-center">
+                <a href="#" id="btn-volver" class="text-decoration-none">¿Ya tienes cuenta? Inicia sesión</a>
+            </div>
+          </form>
+
+          <div class="mt-4">
+            <pre id="respuesta" class="bg-white p-3 border rounded" style="display: none;"></pre>
+          </div>
+
+        </div>
+      </div>
+      <div class="text-center mt-3">
+        <a href="index.html" class="text-decoration-none"><i class="fas fa-arrow-left me-1"></i> Volver al inicio</a>
+      </div>
+    </div>
+
+    <script>
+      const formLogin = document.getElementById("form-login");
+      const formRegistro = document.getElementById("form-registro");
+      const btnCrear = document.getElementById("btn-crear");
+      const btnVolver = document.getElementById("btn-volver");
+      const respuestaEl = document.getElementById("respuesta");
+
+      function mostrarRespuesta(mensaje, esError = true) {
+        respuestaEl.textContent = mensaje;
+        respuestaEl.style.display = 'block';
+        respuestaEl.classList.toggle('text-danger', esError);
+        respuestaEl.classList.toggle('text-success', !esError);
+      }
+
+      // --- LOGIN ---
+      formLogin.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const usuario = document.getElementById("usuario").value.trim();
+          const clave = document.getElementById("clave").value;
+
+          if (!usuario || !clave) {
+            mostrarRespuesta("Por favor, completa usuario y clave.");
+            return;
+          }
+
+          try {
+            const res = await fetch("/api/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ usuario, clave }),
+            });
+            const data = await res.json();
+            if (data.exito && data.token) {
+              localStorage.setItem("usuario", usuario);
+              localStorage.setItem("clave", clave);
+              localStorage.setItem("token", data.token);
+              window.location.href = "dashboard.html"; // Redirige al dashboard
+            } else {
+              mostrarRespuesta(data.error || data.mensaje);
+            }
+          } catch (err) {
+            mostrarRespuesta("Error de conexión con el servidor");
+          }
+        });
+
+      // --- MOSTRAR FORMULARIO DE REGISTRO ---
+      btnCrear.addEventListener("click", (e) => {
+          e.preventDefault();
+          formLogin.style.display = "none";
+          formRegistro.style.display = "block";
+          respuestaEl.style.display = "none";
+        });
+
+      // --- VOLVER A LOGIN ---
+      btnVolver.addEventListener("click", (e) => {
+          e.preventDefault();
+          formLogin.style.display = "block";
+          formRegistro.style.display = "none";
+          respuestaEl.style.display = "none";
+        });
+
+      // --- REGISTRO ---
+      formRegistro.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const usuario = document.getElementById("nuevo_usuario").value.trim();
+          const clave = document.getElementById("nueva_clave").value;
+
+          if (!usuario || !clave) {
+            mostrarRespuesta("Por favor, completa todos los campos.");
+            return;
+          }
+
+          try {
+            const res = await fetch("/api/register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ usuario, clave }),
+            });
+            const data = await res.json();
+            let mensaje = data.mensaje || data.error;
+            mostrarRespuesta(mensaje, !data.exito);
+
+            if (data.exito) {
+              setTimeout(() => {
+                formLogin.style.display = "block";
+                formRegistro.style.display = "none";
+                respuestaEl.style.display = "none";
+                // Rellenar el login
+                document.getElementById("usuario").value = usuario;
+                document.getElementById("clave").value = clave;
+              }, 1500);
+            }
+          } catch (err) {
+            mostrarRespuesta("Error de conexión con el servidor");
+          }
+        });
+    </script>
+  </body>
+</html>

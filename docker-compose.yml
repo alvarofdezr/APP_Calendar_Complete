@@ -1,0 +1,67 @@
+services:
+  # --- Servicio de Base de Datos PostgreSQL ---
+  db:
+    image: postgres:15-alpine
+    container_name: finanzas-db
+    restart: always
+    environment:
+      # Lee estos valores directamente de tu archivo .env
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - finanzas-data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT}:${DB_PORT}" 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- Servicio de Setup de la BBDD (se ejecuta una vez) ---
+  db-setup:
+    build:
+      context: ./frontend-api
+    container_name: finanzas-db-setup
+    restart: 'no' # Solo se ejecuta una vez
+    env_file: .env
+    command: node setup_database.js # Ejecuta el script de setup
+    depends_on:
+      db:
+        condition: service_healthy # Espera a que la BBDD esté lista
+
+  # --- Servicio API/Frontend (Node.js) ---
+  frontend-api:
+    build:
+      context: ./frontend-api 
+    container_name: finanzas-api
+    restart: unless-stopped
+    env_file: .env 
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - ./certs:/usr/src/app/certs:ro 
+    depends_on:
+      db-setup:
+        condition: service_completed_successfully 
+
+  # --- Servicio de Transacciones (Python) ---
+  
+  python-socket:
+    build:
+      context: ./transaccion-server 
+    container_name: finanzas-transaccion
+    restart: unless-stopped
+    env_file: .env 
+    ports:
+      - "${PYTHON_SERVER_PORT}:${PYTHON_SERVER_PORT}"
+    volumes:
+      - ./certs:/usr/src/app/certs:ro
+    depends_on:
+      db-setup:
+        condition: service_completed_successfully 
+
+# --- Volumen para persistir datos de la BBDD ---
+volumes:
+  finanzas-data:
